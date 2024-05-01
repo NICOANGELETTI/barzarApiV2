@@ -3,20 +3,27 @@ package nicoangeletti.bazar.controller;
 
 import java.util.ArrayList;
 import java.util.List;
+import nicoangeletti.bazar.dto.ProductoDto;
 import nicoangeletti.bazar.model.Producto;
+import nicoangeletti.bazar.payload.MensajeResponse;
 import nicoangeletti.bazar.service.IProductoService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.integration.IntegrationProperties.Endpoint;
+import org.springframework.dao.DataAccessException;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
+@RequestMapping("/api/v2")
 public class ProductoController {
     
     
@@ -26,9 +33,11 @@ public class ProductoController {
     
       
       @PostMapping("/productos/crear")
-      public String crearProducto(@RequestBody Producto producto){
-       productoServ.guardarProducto(producto);
-       return "Se ha creado el producto con exito";
+      public ResponseEntity<?> crearProducto(@RequestBody ProductoDto productoDto){
+         Producto productoSave = productoServ.guardarProducto(productoDto);
+         return ResponseEntity.ok(productoSave);
+          
+         
       }
       
       @GetMapping("/productos")
@@ -56,22 +65,41 @@ public class ProductoController {
   
      
      
-     @PutMapping("/productos/editar/{id_producto}")
-public String editarProducto(@PathVariable Long id_producto,
-                            @RequestParam Long idNuevo,
-                            @RequestParam String nombre ,
-                            @RequestParam String marca,
-                            @RequestParam Double costo,
-                            @RequestParam Double cantidad_disponible)
-                                    {
-   
-                    
-    productoServ.editarProducto(id_producto, idNuevo, nombre, marca, costo, cantidad_disponible);
-        
-
-    return "Se ha editado con exito";
-    
-}
+  @PutMapping("productos/editar/{id}")
+    public ResponseEntity<?> update(@RequestBody ProductoDto productoDto, @PathVariable Long id) {
+        Producto productoUpdate = null;
+        try {
+            if (productoServ.existsById(id)) {
+                productoDto.setCodigo_producto(id);
+                productoUpdate = productoServ.guardarProducto(productoDto);
+                return new ResponseEntity<>(MensajeResponse.builder()
+                        .mensaje("Guardado correctamente")
+                        .object(productoDto.builder()
+                                .codigo_producto(productoUpdate.getCodigo_producto())
+                                .nombre(productoUpdate.getNombre())
+                                .costo(productoUpdate.getCosto())
+                                .marca(productoUpdate.getMarca())
+                                .cantidad_disponible(productoUpdate.getCantidad_disponible())
+                                .build())
+                .build()
+                        , HttpStatus.CREATED);
+            } else {
+                return new ResponseEntity<>(
+                        MensajeResponse.builder()
+                                .mensaje("El registro que intenta actualizar no se encuentra en la base de datos.")
+                                .object(null)
+                                .build()
+                        , HttpStatus.NOT_FOUND);
+            }
+        } catch (DataAccessException exDt) {
+            return new ResponseEntity<>(
+                    MensajeResponse.builder()
+                            .mensaje(exDt.getMessage())
+                            .object(null)
+                            .build()
+                    , HttpStatus.METHOD_NOT_ALLOWED);
+        }
+    }
 
 
 

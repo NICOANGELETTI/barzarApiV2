@@ -2,6 +2,8 @@
 package nicoangeletti.bazar.service;
 
 import java.util.List;
+import nicoangeletti.bazar.dto.ProductoDto;
+import nicoangeletti.bazar.model.Cliente;
 import nicoangeletti.bazar.model.Producto;
 import nicoangeletti.bazar.repository.IProductoRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,8 +18,16 @@ public class ProductoService implements IProductoService{
     IProductoRepository productoRepo; 
 
     @Override
-    public void guardarProducto(Producto producto) {
-        productoRepo.save(producto);
+    public Producto guardarProducto(ProductoDto productoDto) {
+     Producto producto = Producto.builder()
+             .codigo_producto(productoDto.getCodigo_producto())
+             .nombre(productoDto.getNombre())
+             .costo(productoDto.getCosto())
+             .marca(productoDto.getMarca())
+             .cantidad_disponible(productoDto.getCantidad_disponible())
+             .build();
+             
+       return productoRepo.save(producto);
         
     }
 
@@ -41,19 +51,11 @@ public class ProductoService implements IProductoService{
     }
 
     @Override
-    public void editarProducto(Long codigoOriginal, Long codigoNuevo, String nombre, String Marca, Double costo, Double cantidad_disponible) {
-
-        Producto producto = this.traerProducto(codigoOriginal);
-        
-        producto.setCodigo_producto(codigoNuevo);
-        producto.setNombre(nombre);
-        producto.setMarca(Marca);
-        producto.setCosto(costo);
-        producto.setCantidad_disponible(cantidad_disponible);
-        
-        this.guardarProducto(producto);
+    public boolean existsById(Long id) {
+        return productoRepo.existsById(id);
     }
 
+ 
    
     
     

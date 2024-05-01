@@ -1,10 +1,8 @@
 
 package nicoangeletti.bazar.service;
 
-import java.time.LocalDate;
 import java.util.List;
-import nicoangeletti.bazar.model.Cliente;
-import nicoangeletti.bazar.model.Producto;
+import nicoangeletti.bazar.dto.VentaDto;
 import nicoangeletti.bazar.model.Venta;
 import nicoangeletti.bazar.repository.IVentaRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,9 +18,18 @@ public class VentaService implements IVentaService  {
     IVentaRepository ventaRepo;
 
     @Override
-    public void guardarVenta(Venta venta) {
-
-        ventaRepo.save(venta);
+    public Venta guardarVenta(VentaDto ventaDto) {
+        Venta venta = Venta.builder()
+         .codigo_venta(ventaDto.getCodigo_venta())
+         .fecha_venta(ventaDto.getFecha_venta())
+         .listaProductos(ventaDto.getListaProductos())
+         .unCliente(ventaDto.getUnCliente())
+         .total(ventaDto.getTotal())
+         .build();
+        
+        
+        
+        return ventaRepo.save(venta);
     }
 
     @Override
@@ -42,23 +49,14 @@ public class VentaService implements IVentaService  {
        ventaRepo.deleteById(idVenta);
     }
 
+  
+
     @Override
-    public void editarVenta(Long codigoVenta, Long codigoNuevo, LocalDate fecha_venta, Double total, List<Producto> listaProductos, Cliente cliente) {
-        Venta venta = this.traerVenta(codigoVenta);
-        
-        venta.setCodigo_venta(codigoNuevo);
-        venta.setFecha_venta(fecha_venta);
-        venta.setTotal(total);
-        venta.setListaProductos(listaProductos);
-        venta.setUnCliente(cliente);
-        
-        this.guardarVenta(venta);
-        
-        
-        
-        
+    public boolean existsById(Long id) {
+        return ventaRepo.existsById(id);
     }
 
+   
 
     
     

@@ -2,6 +2,7 @@
 package nicoangeletti.bazar.service;
 
 import java.util.List;
+import nicoangeletti.bazar.dto.ClienteDto;
 import nicoangeletti.bazar.model.Cliente;
 import nicoangeletti.bazar.repository.IClienteRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,13 +19,23 @@ public class ClienteService implements IClienteService{
     
     
     @Override
-    public void guardarCliente(Cliente cliente) {
-        clienteRepo.save(cliente);
+    public Cliente guardarCliente(ClienteDto clientedto) {
+        Cliente cliente = Cliente.builder()
+                .id_cliente(clientedto.getId_cliente())
+                .nombre(clientedto.getNombre())
+                .apellido(clientedto.getApellido())
+                .dni(clientedto.getDni())
+                .build();
+                
+        
+       return clienteRepo.save(cliente);
+       
+        
     }
 
     @Override
     public List<Cliente> traerClientes() {
-        List<Cliente> listaClientes = clienteRepo.findAll();
+        List<Cliente> listaClientes = (List<Cliente>) clienteRepo.findAll();
         return listaClientes;
     }
 
@@ -40,20 +51,13 @@ public class ClienteService implements IClienteService{
         clienteRepo.deleteById(idCliente);
     }
 
-    @Override
-    public void editarCliente(Long idOriginal, Long idNuevo, String nombre, String apellido, int dni) {
-        Cliente cliente = this.traerCliente(idOriginal);
-        
-        cliente.setId_cliente(idNuevo);
-        cliente.setNombre(nombre);
-        cliente.setApellido(apellido);
-        cliente.setDni(dni);
-        
-        this.guardarCliente(cliente);
-        
-        
+    
+  @Override
+    public boolean existsById(Long id) {
+       return clienteRepo.existsById(id);
     }
 
+ 
 
     
     
